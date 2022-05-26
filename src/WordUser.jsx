@@ -4,7 +4,8 @@ import axios from 'axios';
 export default function WordUser() {
     const [user, setUser] = useState({ id: 0, userName: '', password: '' })
     const [userList, setUserList] = useState([{ id: 0, userName: '', password: '' }])
-    const [userReflesh, setUserReflesh] = useState(false);
+    const [userReflesh, setUserReflesh] = useState(false)
+    const [isUpdate, setIsUpdate] = useState(false)
 
     const setEkelencekVal = (event) => {
 
@@ -16,22 +17,32 @@ export default function WordUser() {
     }
     const getUser = () => {
         axios.get('http://localhost:46634/api/User/')
-            .then((res) => setUserList(res.data));
+            .then((res) => setUserList(res.data))
     }
     const userAdd = () => {
-        axios.post('http://localhost:46634/api/User/', user)
-            .then(() => { getUser() });
+        if (isUpdate === false) {
+            axios.post('http://localhost:46634/api/User/', user)
+                .then(() => { getUser() })
+
+
+        } else {
+            axios.put('http://localhost:46634/api/User/' + user.id, user)
+                .then(() => { getUser() })
+            setIsUpdate(false)
+            setUser({ id: 0, userName: '', password: '' })
+        }
+
         setUserReflesh(!userReflesh)
+
     }
     const userDelete = (id) => {
         axios.delete('http://localhost:46634/api/User/' + id)
-            .then(() => { getUser() });
+            .then(() => { getUser() })
         setUserReflesh(!userReflesh)
     }
-    const userUpdate = (id) => {
-        axios.put('http://localhost:46634/api/User/' + id, setUser).then(() => {
-            user(setUser)
-        })
+    const userUpdate = (usr) => {
+        setUser(usr)
+        setIsUpdate(!isUpdate)
     }
     useEffect(() => {
         getUser()
@@ -41,7 +52,7 @@ export default function WordUser() {
     return (<div >
         {
             userList.map((usr) => {
-                return <div key={usr.id}>{usr.id}||{usr.userName}||{usr.password}|| <button onClick={() => userDelete(usr.id)}>sil</button> <button onClick={() => userUpdate(usr.id)}>update</button></div>
+                return <div key={usr.id}>{usr.id}||{usr.userName}||{usr.password}|| <button onClick={() => userDelete(usr.id)}>sil</button> <button onClick={() => userUpdate(usr, usr.id)}>update</button></div>
             })
         }
 
@@ -52,7 +63,7 @@ export default function WordUser() {
             <div className='form-group'>
                 password:<input className='form-control' name='password' type='text' value={user.password} onChange={setEkelencekVal} />
             </div>
-            <button onClick={userAdd} >Kaydet</button>
+            <button onClick={userAdd}>Kaydet</button>
         </div>
     </div>
     );
